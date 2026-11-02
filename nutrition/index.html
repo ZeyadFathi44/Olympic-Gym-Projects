@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"/>
+<script src="../assets/js/storage-shim.js"></script>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Olympic Gym"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#080808"/>
+<title>Olympic Gym — Nutrition Plan Maker</title>
+<meta name="color-scheme" content="dark"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin/>
+<!-- ⚡ OLYMPIC GYM BOOT LOADING SCREEN — painted before CDN scripts load -->
+<link rel="stylesheet" href="css/splash.css"/>
+<div id="og-loading">
+  <img id="og-loading-logo" class="lg-shield" alt="Olympic Gym"/>
+  <div class="lg-name">OLYMPIC GYM</div>
+  <div class="lg-sub">Nutrition Plan Maker</div>
+  <div class="lg-bar"><div></div></div>
+</div>
+<script src="../assets/js/shield-b64.js"></script>
+<script src="js/boot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+<link rel="stylesheet" href="css/main.css"/>
+<link rel="stylesheet" href="css/assistant.css"/>
+<link rel="stylesheet" href="../css/liquid-nutrition.css"/>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+  <img id="topbar-logo-img" alt="" style="height:34px;width:auto;display:block;flex-shrink:0;"/>
+  <div class="topbar-logo">Olympic Gym</div>
+  <div style="display:flex;flex-direction:column;justify-content:center;gap:1px;">
+    <div class="topbar-sub">Nutrition Plan Maker</div>
+    <div style="font-size:10px;color:#888;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;">Programmed by Coach Loai Hassan 🧬</div>
+  </div>
+  <!-- Active client pill -->
+  <div id="topbar-client-pill" onclick="showPage('roster')" style="display:none;align-items:center;gap:8px;background:rgba(245,255,0,0.07);border:1px solid rgba(245,255,0,0.2);padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .15s;margin-left:4px;" title="View all clients">
+    <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+      <span id="topbar-client-name" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#F5FF00;letter-spacing:1px;line-height:1.2;">—</span>
+      <span id="topbar-client-meta" style="font-size:9px;color:#555;letter-spacing:1px;line-height:1.2;">—</span>
+    </div>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div id="plan-progress-pill" style="display:none;align-items:center;gap:6px;background:rgba(245,255,0,0.05);border:1px solid rgba(245,255,0,0.15);padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:#555;" title="Plan completion">
+    <span id="plan-progress-text">0%</span>
+    <div style="width:40px;height:3px;background:#1a1a1a;overflow:hidden;">
+      <div id="plan-progress-bar" style="height:100%;background:#F5FF00;width:0;transition:width .4s;"></div>
+    </div>
+  </div>
+  <button id="lang-toggle-btn" class="btn btn-outline btn-sm" onclick="toggleLanguage()" style="color:#888;border-color:#333;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1px;min-width:52px;" title="Switch language">🌐 AR</button>
+  <button class="btn btn-outline btn-sm" onclick="showPage('roster')" style="color:#00CFFF;border-color:rgba(0,207,255,0.3);">👥 Clients</button>
+  <button class="btn btn-outline btn-sm" onclick="showPage('preview')">👁 Preview</button>
+  <button class="btn btn-outline btn-sm" onclick="openSaveModal()" style="color:#4ade80;border-color:rgba(74,222,128,0.3);">💾 Save</button>
+  <button class="btn btn-outline btn-sm" onclick="resetPlan()" style="color:#f87171;border-color:rgba(248,113,113,0.2);" title="Clear current plan and start fresh">🔄 Reset</button>
+  <button class="btn btn-outline btn-sm" onclick="triggerDocxImport()" style="color:#FF8C42;border-color:rgba(255,140,66,0.35);">📂 Import .docx</button>
+  <input type="file" id="docx-file-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="handleDocxImport(this)"/>
+  <button class="btn btn-yellow btn-sm" onclick="openThemeModal()">⬇ Export .docx</button>
+  <button class="btn btn-outline btn-sm" onclick="exportPDF(this)" style="color:#f87171;border-color:rgba(248,113,113,0.35);">📄 PDF</button>
+</div>
+
+<div class="export-loading" id="export-loading">
+  <div class="spinner"></div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--y);letter-spacing:3px;">GENERATING WORD FILE...</div>
+</div>
+
+<!-- ── Theme Picker Modal ───────────────────────────────────── -->
+<div id="theme-modal-overlay" onclick="closeThemeModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center;"></div>
+<div id="theme-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2001;background:#111;border:1px solid rgba(245,255,0,0.2);padding:28px 24px;width:min(680px,96vw);max-height:90vh;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#F5FF00;letter-spacing:3px;margin-bottom:6px;">CHOOSE EXPORT THEME</div>
+  <div style="font-size:11px;color:#555;letter-spacing:1px;margin-bottom:20px;">Select a colour scheme for your Word document</div>
+  <div id="theme-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:24px;"></div>
+
+  <!-- ── Tier selector (only shown when carb cycling is configured) ── -->
+  <div id="cc-export-selector" style="display:none;background:rgba(0,207,255,0.05);border:1px solid rgba(0,207,255,0.2);border-radius:4px;padding:14px 16px;margin-bottom:20px;">
+    <div style="font-size:11px;color:#00CFFF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">📅 Carb Cycling Detected — Export Which Day Plans?</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#4ade80;letter-spacing:1px;">
+        <input type="checkbox" id="cc-export-tier-H" checked onchange="ccUpdateExportHint()" style="width:16px;height:16px;accent-color:#4ade80;"/>
+        🔥 HIGH Carb Day
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#00CFFF;letter-spacing:1px;">
+        <input type="checkbox" id="cc-export-tier-M" checked onchange="ccUpdateExportHint()" style="width:16px;height:16px;accent-color:#00CFFF;"/>
+        ⚡ MEDIUM Carb Day
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#FF8C42;letter-spacing:1px;">
+        <input type="checkbox" id="cc-export-tier-L" checked onchange="ccUpdateExportHint()" style="width:16px;height:16px;accent-color:#FF8C42;"/>
+        ❄️ LOW Carb Day
+      </label>
+    </div>
+    <div id="cc-export-hint" style="font-size:10px;color:#555;margin-top:8px;letter-spacing:0.5px;">
+      The meal builder is your MEDIUM day. High/Low variants are auto-generated by scaling carb-source foods.<br>
+      <strong style="color:var(--y);">Note:</strong> the PDF and Preview export show <strong style="color:#00CFFF;">all day plans</strong> too when carb cycling is configured.
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:flex-end;">
+    <button class="btn btn-outline btn-sm" onclick="closeThemeModal()" style="color:#555;border-color:#333;">Cancel</button>
+    <button class="btn btn-yellow btn-sm" onclick="confirmThemeExport()" id="theme-export-btn">⬇ Export Selected Theme</button>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="nav-section">Clients</div>
+    <div class="nav-item" onclick="showPage('roster')" data-page="roster"><span class="icon">👥</span> All Clients</div>
+    <div class="nav-item" onclick="newClientFlow()" data-page="__new"><span class="icon">➕</span> New Client</div>
+    <div class="nav-section">Setup</div>
+    <div class="nav-item active" onclick="showPage('client')" data-page="client"><span class="icon">👤</span> Client Info</div>
+    <div class="nav-item" onclick="showPage('inbody')" data-page="inbody"><span class="icon">📊</span> InBody Data</div>
+    <div class="nav-item" onclick="showPage('progress')" data-page="progress"><span class="icon">📈</span> Progress Tracker</div>
+    <div class="nav-item" onclick="showPage('targets')" data-page="targets"><span class="icon">🎯</span> Daily Targets</div>
+    <div class="nav-section">Nutrition</div>
+    <div class="nav-item" onclick="showPage('meals')" data-page="meals"><span class="icon">🍽</span> Meals</div>
+    <div class="nav-item" onclick="showPage('supplements')" data-page="supplements"><span class="icon">💊</span> Supplements</div>
+    <div class="nav-section">Output</div>
+    <div class="nav-item" onclick="showPage('preview')" data-page="preview"><span class="icon">👁</span> Preview Plan</div>
+    <div class="nav-item" onclick="showPage('grocery')" data-page="grocery"><span class="icon">🧾</span> Grocery List</div>
+    <div class="nav-item" onclick="showPage('templates')" data-page="templates"><span class="icon">🗂</span> Templates</div>
+    <div class="nav-item" onclick="showPage('notes')" data-page="notes"><span class="icon">📝</span> Coach Notes</div>
+  </nav>
+
+  <main class="main">
+
+    <!-- CLIENT ROSTER -->
+    <div class="page" id="page-roster">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="sec-title">Client Roster</div>
+        <button class="btn btn-yellow btn-sm" onclick="newClientFlow()">➕ New Client</button>
+      </div>
+      <div class="sec-sub">All saved clients — click to load</div>
+      <div class="divider"></div>
+
+      <!-- Search bar -->
+      <div style="margin-bottom:20px;position:relative;">
+        <input id="roster-search" class="form-input" placeholder="🔍  Search by name, goal, or phase..." oninput="rosterRender()"
+          style="padding-right:40px;"/>
+      </div>
+
+      <!-- Stats bar -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
+        <div style="background:var(--card);border:1px solid var(--border2);padding:14px;text-align:center;position:relative;">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:#00CFFF;"></div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#00CFFF;" id="rs-total">0</div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Total Clients</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border2);padding:14px;text-align:center;position:relative;">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:#f87171;"></div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#f87171;" id="rs-loss">0</div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Fat Loss</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border2);padding:14px;text-align:center;position:relative;">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:#4ade80;"></div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#4ade80;" id="rs-gain">0</div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Muscle Gain</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border2);padding:14px;text-align:center;position:relative;">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--y);"></div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--y);" id="rs-other">0</div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Other Goals</div>
+        </div>
+      </div>
+
+      <!-- Client grid -->
+      <div id="roster-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
+      <div id="roster-empty" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">👥</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--muted);letter-spacing:2px;">No Clients Saved Yet</div>
+        <div style="font-size:13px;color:#444;margin-top:8px;margin-bottom:20px;">Fill in Client Info and save to build your roster.</div>
+        <button class="btn btn-yellow" onclick="newClientFlow()">➕ Create First Client</button>
+      </div>
+    </div>
+
+    <!-- CLIENT -->
+    <div class="page active" id="page-client">
+      <div class="sec-title">Client Info</div>
+      <div class="sec-sub">Basic client details</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="card-title">Personal Details</div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label class="form-label">Client Name (EN)</label><input class="form-input" id="c-name" placeholder="e.g. Hager Mohamed" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Client Name (AR)</label><input class="form-input" id="c-name-ar" placeholder="هاجر محمد" oninput="syncPreview()" style="direction:rtl"/></div>
+          <div class="form-group"><label class="form-label">Coach Name</label><input class="form-input" id="c-coach-name" placeholder="Coach Loai Hassan" value="Coach Loai Hassan" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Age</label><input class="form-input" id="c-age" type="number" placeholder="25" oninput="calcBMR()"/></div>
+          <div class="form-group"><label class="form-label">Gender</label><select class="form-input" id="c-gender" onchange="calcBMR()"><option value="male">Male</option><option value="female">Female</option></select></div>
+          <div class="form-group"><label class="form-label">Goal</label><input class="form-input" id="c-goal" placeholder="Fat Loss / Muscle Gain / Maintenance" oninput="syncPreview()"/>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">
+              <button onclick="setVal('c-goal','Fat Loss')" class="quick-chip">🔥 Fat Loss</button>
+              <button onclick="setVal('c-goal','Muscle Gain')" class="quick-chip">💪 Muscle Gain</button>
+              <button onclick="setVal('c-goal','Maintenance')" class="quick-chip">⚖️ Maintenance</button>
+              <button onclick="setVal('c-goal','Body Recomposition')" class="quick-chip">🔄 Recomp</button>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Plan Phase</label><input class="form-input" id="c-phase" placeholder="Phase 1 / Ramadan / Off-Season" oninput="syncPreview()"/>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">
+              <button onclick="setVal('c-phase','Phase 1')" class="quick-chip">1️⃣ Phase 1</button>
+              <button onclick="setVal('c-phase','Phase 2')" class="quick-chip">2️⃣ Phase 2</button>
+              <button onclick="setVal('c-phase','Phase 3')" class="quick-chip">3️⃣ Phase 3</button>
+              <button onclick="setVal('c-phase','Ramadan')" class="quick-chip">🌙 Ramadan</button>
+              <button onclick="setVal('c-phase','Off-Season')" class="quick-chip">🏖 Off-Season</button>
+              <button onclick="setVal('c-phase','Competition Prep')" class="quick-chip">🏆 Comp Prep</button>
+              <button onclick="toggleRamadanMode()" id="ramadan-mode-chip" class="quick-chip" title="Shifts meal & supplement timing to suhoor/iftar schedule">🌙 Ramadan Mode</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Health & Restrictions</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Injuries / Health Conditions</label><textarea class="form-input" id="c-injuries" placeholder="e.g. Lower back pain, knee injury, diabetes..." oninput="syncPreview()"></textarea></div>
+          <div class="form-group"><label class="form-label">Allergies / Food Restrictions</label><textarea class="form-input" id="c-allergies" placeholder="e.g. Lactose intolerant, no nuts..." oninput="syncPreview()"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INBODY -->
+    <div class="page" id="page-inbody">
+      <div class="sec-title">InBody Data</div>
+      <div class="sec-sub">BMR & TDEE auto-calculated via Mifflin-St Jeor</div>
+      <div class="divider"></div>
+
+      <!-- ── AI InBody Scanner ── -->
+      <div class="card" id="inbody-scan-card" style="border-color:rgba(0,207,255,0.25);cursor:default;">
+        <div class="card-title" style="color:#00CFFF;">🤖 InBody OCR Scanner</div>
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+          <!-- Drop / preview area -->
+          <div id="ib-scan-drop" onclick="document.getElementById('ib-photo-input').click()"
+            ondragover="event.preventDefault();this.classList.add('ib-drag')"
+            ondragleave="this.classList.remove('ib-drag')"
+            ondrop="event.preventDefault();this.classList.remove('ib-drag');ibHandleDrop(event)"
+            style="flex-shrink:0;width:160px;height:130px;border:2px dashed rgba(0,207,255,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;border-radius:2px;background:rgba(0,207,255,0.03);overflow:hidden;position:relative;">
+            <div id="ib-scan-placeholder" style="text-align:center;pointer-events:none;">
+              <div style="font-size:30px;margin-bottom:6px;">📷</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00CFFF;">Upload Photo</div>
+              <div style="font-size:10px;color:#444;margin-top:3px;">JPG / PNG / WEBP</div>
+            </div>
+            <img id="ib-scan-preview" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;" />
+          </div>
+          <input type="file" id="ib-photo-input" accept="image/*" style="display:none" onchange="ibHandlePhotoUpload(this)"/>
+          <input type="file" id="ib-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="ibHandlePhotoUpload(this)"/>
+
+          <!-- Info & button -->
+          <div style="flex:1;min-width:180px;">
+            <div style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:14px;">
+              Upload any <strong style="color:#00CFFF;">InBody result sheet</strong> photo — OCR reads every number directly on your device and fills all fields below. <strong style="color:#4ade80;">No internet or API key needed.</strong>
+            </div>
+            <div style="font-size:11px;color:#444;margin-bottom:14px;line-height:1.6;">
+              Works with InBody 270, 370, 570, 770 &amp; 970 printouts, screenshots, and photos of the screen. Arabic &amp; English supported.
+            </div>
+            <button id="ib-scan-btn" class="btn btn-sm" onclick="ibScanPhoto()"
+              style="background:rgba(0,207,255,0.12);color:#00CFFF;border:1px solid rgba(0,207,255,0.35);display:none;">
+              ⚡ Scan &amp; Fill Fields
+            </button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+              <button class="btn btn-sm" onclick="document.getElementById('ib-photo-input').click()"
+                style="background:rgba(0,207,255,0.08);color:#00CFFF;border:1px solid rgba(0,207,255,0.25);">🖼️ Upload / Gallery</button>
+              <button class="btn btn-sm" onclick="document.getElementById('ib-photo-camera').click()"
+                style="background:rgba(0,207,255,0.08);color:#00CFFF;border:1px solid rgba(0,207,255,0.25);">📸 Take Photo</button>
+              <button class="btn btn-sm" onclick="ibPasteFromClipboard()"
+                style="background:rgba(0,207,255,0.08);color:#00CFFF;border:1px solid rgba(0,207,255,0.25);">📋 Paste Screenshot</button>
+            </div>
+            <div style="font-size:10px;color:#333;margin-top:8px;letter-spacing:0.5px;">Tip: press Ctrl+V anywhere on this page to paste an InBody screenshot instantly.</div>
+          </div>
+        </div>
+
+        <!-- Progress / status -->
+        <div id="ib-scan-status" style="display:none;margin-top:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div id="ib-scan-spinner" style="width:18px;height:18px;border:2px solid rgba(0,207,255,0.2);border-top-color:#00CFFF;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div>
+            <div id="ib-scan-status-text" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#00CFFF;">Analyzing photo...</div>
+          </div>
+          <div style="height:3px;background:#1a1a1a;border-radius:2px;margin-top:10px;overflow:hidden;">
+            <div id="ib-scan-bar" style="height:100%;background:#00CFFF;width:0%;transition:width .5s;border-radius:2px;"></div>
+          </div>
+        </div>
+
+        <!-- Result preview chips -->
+        <div id="ib-scan-chips" style="display:none;margin-top:16px;flex-wrap:wrap;gap:8px;"></div>
+
+        <!-- OCR raw text (debug) -->
+        <div id="ib-ocr-toggle-row" style="display:none;margin-top:10px;">
+          <span onclick="const r=document.getElementById('ib-ocr-raw');const s=r.style.display==='none';r.style.display=s?'block':'none';this.textContent=s?'▲ Hide raw OCR text':'▼ Show raw OCR text'"
+            style="font-size:10px;color:#333;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">▼ Show raw OCR text</span>
+          <pre id="ib-ocr-raw" style="display:none;margin-top:8px;background:#0a0a0a;border:1px solid rgba(255,255,255,0.05);padding:10px;font-size:10px;color:#444;max-height:160px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;border-radius:2px;"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Body Composition</div>
+        <div class="inbody-grid">
+          <div class="form-group"><label class="form-label">Weight (kg)</label><input class="form-input" id="ib-weight" type="number" step="0.1" placeholder="75.0" oninput="calcBMR()"/></div>
+          <div class="form-group"><label class="form-label">Height (cm)</label><input class="form-input" id="ib-height" type="number" placeholder="175" oninput="calcBMR()"/></div>
+          <div class="form-group"><label class="form-label">Body Fat %</label><input class="form-input" id="ib-bf" type="number" step="0.1" placeholder="20.0" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Skeletal Muscle Mass (kg)</label><input class="form-input" id="ib-smm" type="number" step="0.1" placeholder="30.0" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Fat Mass (kg)</label><input class="form-input" id="ib-fatmass" type="number" step="0.1" placeholder="15.0" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">BMI</label><input class="form-input" id="ib-bmi" type="number" step="0.1" placeholder="24.5" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Total Body Water (L)</label><input class="form-input" id="ib-tbw" type="number" step="0.1" placeholder="38.0" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Protein (kg)</label><input class="form-input" id="ib-protein-kg" type="number" step="0.1" placeholder="10.5" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Visceral Fat Level</label><input class="form-input" id="ib-vfl" type="number" placeholder="8" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Fitness Score</label><input class="form-input" id="ib-score" type="number" placeholder="70" oninput="syncPreview()"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Activity & BMR Inputs</div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label class="form-label">Age (years)</label><input class="form-input" id="ib-age" type="number" placeholder="25" oninput="calcBMR()"/></div>
+          <div class="form-group"><label class="form-label">Gender</label>
+            <select class="form-input" id="ib-gender" onchange="calcBMR()">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Activity Multiplier</label>
+            <select class="form-input" id="ib-activity" onchange="calcBMR()">
+              <option value="1.2">Sedentary (little/no exercise)</option>
+              <option value="1.375">Lightly Active (1-3 days/wk)</option>
+              <option value="1.55" selected>Moderately Active (3-5 days/wk)</option>
+              <option value="1.725">Very Active (6-7 days/wk)</option>
+              <option value="1.9">Super Active (2x/day training)</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">InBody Test Date</label><input class="form-input" id="ib-date" type="date" oninput="syncPreview()"/></div>
+        </div>
+      </div>
+      <div class="card" id="bmr-card" style="display:none">
+        <div class="card-title">📊 Calculated Results</div>
+        <div class="result-grid">
+          <div class="result-box"><div class="result-val" id="r-bmr">—</div><div class="result-label">BMR (kcal)</div></div>
+          <div class="result-box cyan"><div class="result-val" id="r-tdee">—</div><div class="result-label">TDEE (kcal)</div></div>
+          <div class="result-box green"><div class="result-val" id="r-deficit">—</div><div class="result-label">Deficit (–500)</div></div>
+          <div class="result-box orange"><div class="result-val" id="r-surplus">—</div><div class="result-label">Surplus (+300)</div></div>
+        </div>
+        <div style="margin-top:12px;padding:10px 14px;background:var(--card2);font-size:11px;color:var(--muted);">Mifflin-St Jeor: BMR(M)=10W+6.25H-5A+5 &nbsp;|&nbsp; BMR(F)=10W+6.25H-5A-161 &nbsp;|&nbsp; TDEE = BMR × Activity</div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-yellow btn-sm" onclick="smgAutoFillTdee();showPage('targets');toast('TDEE applied to Macro Calculator ✅','success');">⚡ Use TDEE in Macro Calculator →</button>
+          <button class="btn btn-sm" onclick="saveInBodyHistory()" style="background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);">📊 Save Snapshot</button>
+          <button class="btn btn-sm" onclick="generateAutoMeals()" style="background:rgba(245,255,0,0.08);color:var(--y);border:1px solid rgba(245,255,0,0.25);">🍽 Auto-Generate Meals</button>
+        </div>
+      </div>
+
+    <!-- InBody Progress Chart -->
+    <div class="card" id="progress-chart-card" style="display:none;">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>📈 Body Composition Trends</span>
+        <button class="btn btn-sm" onclick="clearInBodyHistory()" style="background:transparent;color:#555;border:1px solid #333;font-size:10px;padding:3px 10px;letter-spacing:1px;">Clear History</button>
+      </div>
+      <div style="position:relative;height:220px;">
+        <canvas id="inbody-chart"></canvas>
+      </div>
+      <div id="inbody-history-list" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+    </div>
+
+    <!-- TARGETS -->
+    <div class="page" id="page-targets">
+      <div class="sec-title">Daily Targets</div>
+      <div class="sec-sub">Set macro targets for the plan</div>
+      <div class="divider"></div>
+
+      <!-- ── SMART MACRO GENERATOR ── -->
+      <div class="card">
+        <div class="card-title">⚡ Smart Macro Generator</div>
+
+        <!-- TDEE INPUT ROW -->
+        <div style="background:rgba(245,255,0,0.06);border:1px solid rgba(245,255,0,0.3);padding:14px 16px;margin-bottom:18px;border-radius:2px;">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Your TDEE (Total Daily Energy Expenditure)</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input id="smg-tdee-input" type="number" class="form-input" placeholder="e.g. 2400" min="1000" max="6000"
+              style="flex:1;min-width:120px;max-width:180px;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--y);text-align:center;border-color:rgba(245,255,0,0.4);padding:8px;"
+              oninput="smgTdeeChange()"/>
+            <div>
+              <div style="font-size:11px;color:var(--muted);">kcal / day</div>
+              <button class="btn btn-outline btn-sm" onclick="smgAutoFillTdee()" style="margin-top:4px;white-space:nowrap;font-size:11px;">⚡ Pull from BMR Calc</button>
+            </div>
+          </div>
+          <div id="smg-tdee-hint" style="font-size:11px;color:#555;margin-top:8px;line-height:1.5;">Enter TDEE manually — or go to <strong style="color:var(--muted);">InBody</strong> page, fill in weight/height/age, then click <strong style="color:var(--muted);">Pull from BMR Calc</strong>.</div>
+        </div>
+
+        <!-- GOAL TABS -->
+        <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Goal</div>
+        <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;" id="smg-goal-tabs">
+          <button class="smg-goal-btn active" data-goal="loss" onclick="smgSetGoal('loss')">🔥 Fat Loss</button>
+          <button class="smg-goal-btn" data-goal="maintain" onclick="smgSetGoal('maintain')">⚖️ Maintain / Recomp</button>
+          <button class="smg-goal-btn" data-goal="gain" onclick="smgSetGoal('gain')">💪 Muscle Gain</button>
+        </div>
+
+        <!-- DEFICIT / SURPLUS LEVELS -->
+        <div id="smg-level-section">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;" id="smg-level-label">Deficit Level</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:12px;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:240px;" id="smg-level-tabs">
+              <button class="smg-level-btn active" data-level="mild" onclick="smgSetLevel('mild')">Mild<br><span>–10%</span></button>
+              <button class="smg-level-btn" data-level="moderate" onclick="smgSetLevel('moderate')">Moderate<br><span>–20%</span></button>
+              <button class="smg-level-btn" data-level="aggressive" onclick="smgSetLevel('aggressive')">Aggressive<br><span>–25%</span></button>
+              <button class="smg-level-btn" data-level="extreme" onclick="smgSetLevel('extreme')">Extreme<br><span>–30%</span></button>
+              <button class="smg-level-btn" data-level="custom" onclick="smgSetLevel('custom')">Custom<br><span>✎ kcal</span></button>
+            </div>
+            <div id="smg-deficit-window" style="background:rgba(255,140,66,0.08);border:1px solid rgba(255,140,66,0.35);border-radius:8px;padding:5px 12px;min-width:110px;text-align:center;align-self:center;">
+              <div id="smg-deficit-kcal" style="font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:20px;color:#FF8C42;letter-spacing:1px;">— kcal</div>
+              <div id="smg-deficit-daily" style="font-size:9px;color:var(--muted);letter-spacing:1px;">enter TDEE first</div>
+            </div>
+          </div>
+          <div id="smg-custom-row" style="display:none;margin-bottom:16px;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,140,66,0.4);border-radius:8px;padding:10px 14px;">
+            <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Custom kcal from your total (TDEE)</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input id="smg-custom-deficit" type="number" class="form-input" placeholder="e.g. 350" min="0" step="25"
+                style="width:110px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:20px;color:#FF8C42;padding:6px;"
+                oninput="smgCalc()"/>
+              <span style="font-size:11px;color:#555;">kcal deficit (or surplus on gain goal) — type the amount and it's applied instantly</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MACRO PROFILE -->
+        <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Macro Profile</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:18px;" id="smg-profile-tabs">
+          <button class="smg-profile-btn active" data-profile="highprot" onclick="smgSetProfile('highprot')">
+            <div style="font-size:18px;">🥩</div>
+            <div>High Protein</div>
+            <div style="font-size:9px;color:var(--muted);">2.8g/kg</div>
+          </button>
+          <button class="smg-profile-btn" data-profile="balanced" onclick="smgSetProfile('balanced')">
+            <div style="font-size:18px;">⚖️</div>
+            <div>Balanced</div>
+            <div style="font-size:9px;color:var(--muted);">2.2g/kg</div>
+          </button>
+          <button class="smg-profile-btn" data-profile="lowcarb" onclick="smgSetProfile('lowcarb')">
+            <div style="font-size:18px;">🥑</div>
+            <div>Low Carb</div>
+            <div style="font-size:9px;color:var(--muted);">&lt;80g carbs</div>
+          </button>
+          <button class="smg-profile-btn" data-profile="keto" onclick="smgSetProfile('keto')">
+            <div style="font-size:18px;">🧈</div>
+            <div>Keto</div>
+            <div style="font-size:9px;color:var(--muted);">&lt;30g carbs</div>
+          </button>
+          <button class="smg-profile-btn" data-profile="highcarb" onclick="smgSetProfile('highcarb')">
+            <div style="font-size:18px;">🍚</div>
+            <div>High Carb</div>
+            <div style="font-size:9px;color:var(--muted);">55% carbs</div>
+          </button>
+        </div>
+
+        <!-- PROTEIN PER KG -->
+        <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Protein Target <span style="color:var(--y);font-family:'Bebas Neue',sans-serif;font-size:14px;" id="smg-prot-label">2.6 g/kg</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;" id="smg-prot-tabs">
+          <button class="smg-prot-btn" data-pg="1.4" onclick="smgSetProt(1.4)">1.4<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="1.6" onclick="smgSetProt(1.6)">1.6<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="1.8" onclick="smgSetProt(1.8)">1.8<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="2.0" onclick="smgSetProt(2.0)">2.0<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="2.2" onclick="smgSetProt(2.2)">2.2<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="2.4" onclick="smgSetProt(2.4)">2.4<span>g/kg</span></button>
+          <button class="smg-prot-btn active" data-pg="2.6" onclick="smgSetProt(2.6)">2.6<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="2.8" onclick="smgSetProt(2.8)">2.8<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="3.0" onclick="smgSetProt(3.0)">3.0<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="3.2" onclick="smgSetProt(3.2)">3.2<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="3.4" onclick="smgSetProt(3.4)">3.4<span>g/kg</span></button>
+          <button class="smg-prot-btn" data-pg="3.6" onclick="smgSetProt(3.6)">3.6<span>g/kg</span></button>
+        </div>
+
+        <!-- LIVE PREVIEW -->
+        <div id="smg-preview" style="background:var(--card2);border:1px solid var(--border);padding:16px;margin-bottom:16px;display:none;">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Preview — <span id="smg-desc" style="color:var(--y);">—</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+            <div style="text-align:center;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--y);" id="smg-p-cal">—</div>
+              <div style="font-size:10px;color:var(--muted);">CALORIES</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#00CFFF;" id="smg-p-prot">—</div>
+              <div style="font-size:10px;color:var(--muted);">PROTEIN g</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--opt3);" id="smg-p-carbs">—</div>
+              <div style="font-size:10px;color:var(--muted);">CARBS g</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);" id="smg-p-fats">—</div>
+              <div style="font-size:10px;color:var(--muted);">FATS g</div>
+            </div>
+          </div>
+          <!-- Macro % bars -->
+          <div style="display:flex;gap:4px;height:6px;border-radius:3px;overflow:hidden;">
+            <div id="smg-bar-prot" style="background:#00CFFF;transition:width .3s;"></div>
+            <div id="smg-bar-carbs" style="background:var(--opt3);transition:width .3s;"></div>
+            <div id="smg-bar-fats" style="background:var(--green);transition:width .3s;"></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:6px;font-size:10px;color:var(--muted);">
+            <span>🔵 Protein <span id="smg-pct-prot">—</span>%</span>
+            <span>🟠 Carbs <span id="smg-pct-carbs">—</span>%</span>
+            <span>🟢 Fats <span id="smg-pct-fats">—</span>%</span>
+            <span>💧 Water <span id="smg-p-water">—</span>L</span>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--muted);" id="smg-note"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-yellow btn-sm" onclick="smgApply()" id="smg-apply-btn" style="opacity:.4;cursor:not-allowed;" disabled>✅ Apply to Plan</button>
+          <button class="btn btn-outline btn-sm" onclick="smgCalc()">🔄 Calculate</button>
+        </div>
+      </div>
+
+      <!-- ── MANUAL MACRO TARGETS ── -->
+      <div class="card">
+        <div class="card-title">Manual Macro Targets</div>
+        <div class="form-grid form-grid-4">
+          <div class="form-group"><label class="form-label">Calories (kcal)</label><input class="form-input" id="t-cal" type="number" placeholder="2000" oninput="syncPreview();macroLockSyncInputs();macroLockUpdateStatus();updateGrandTotal();"/></div>
+          <div class="form-group"><label class="form-label">Protein (g)</label><input class="form-input" id="t-prot" type="number" placeholder="160" oninput="syncPreview();macroLockSyncInputs();macroLockUpdateStatus();updateGrandTotal();"/></div>
+          <div class="form-group"><label class="form-label">Carbs (g)</label><input class="form-input" id="t-carbs" type="number" placeholder="200" oninput="syncPreview();macroLockSyncInputs();macroLockUpdateStatus();updateGrandTotal();"/></div>
+          <div class="form-group"><label class="form-label">Fats (g)</label><input class="form-input" id="t-fats" type="number" placeholder="60" oninput="syncPreview();macroLockSyncInputs();macroLockUpdateStatus();updateGrandTotal();"/></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:14px" onclick="autofillFromTDEE()">⚡ Quick Auto-fill from TDEE</button>
+      </div>
+
+      <!-- ── MACRO LOCK & DYNAMIC MODIFICATION SYSTEM ── -->
+      <div class="card" id="macro-lock-panel" style="border-color:rgba(245,255,0,0.2);">
+        <div class="card-title" style="color:var(--y);display:flex;align-items:center;gap:10px;">
+          🔐 Macro Lock & Adjust System
+          <span style="font-family:'Barlow',sans-serif;font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0;text-transform:none;">Lock any macro to prevent auto-adjustment</span>
+        </div>
+
+        <!-- Macro inputs with lock buttons -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+
+          <!-- CALORIES -->
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Calories</span>
+              <button id="ml-lock-cal" onclick="macroLockToggle('cal')" title="Lock/Unlock"
+                style="background:none;border:none;cursor:pointer;font-size:16px;color:#555;padding:0;line-height:1;transition:color .15s;">🔓</button>
+            </div>
+            <input id="ml-cal" type="number" class="form-input" placeholder="2000" oninput="macroLockOnInput('cal')"
+              style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--y);border-color:rgba(245,255,0,0.2);"/>
+            <div style="font-size:10px;color:var(--muted);text-align:center;letter-spacing:1px;">kcal</div>
+          </div>
+
+          <!-- PROTEIN -->
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Protein</span>
+              <button id="ml-lock-prot" onclick="macroLockToggle('prot')" title="Lock/Unlock"
+                style="background:none;border:none;cursor:pointer;font-size:16px;color:#555;padding:0;line-height:1;transition:color .15s;">🔓</button>
+            </div>
+            <input id="ml-prot" type="number" class="form-input" placeholder="160" oninput="macroLockOnInput('prot')"
+              style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00CFFF;border-color:rgba(0,207,255,0.2);"/>
+            <div style="font-size:10px;color:var(--muted);text-align:center;letter-spacing:1px;">grams</div>
+          </div>
+
+          <!-- CARBS -->
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Carbs</span>
+              <button id="ml-lock-carbs" onclick="macroLockToggle('carbs')" title="Lock/Unlock"
+                style="background:none;border:none;cursor:pointer;font-size:16px;color:#555;padding:0;line-height:1;transition:color .15s;">🔓</button>
+            </div>
+            <input id="ml-carbs" type="number" class="form-input" placeholder="200" oninput="macroLockOnInput('carbs')"
+              style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--opt3);border-color:rgba(255,140,66,0.2);"/>
+            <div style="font-size:10px;color:var(--muted);text-align:center;letter-spacing:1px;">grams</div>
+          </div>
+
+          <!-- FATS -->
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Fats</span>
+              <button id="ml-lock-fats" onclick="macroLockToggle('fats')" title="Lock/Unlock"
+                style="background:none;border:none;cursor:pointer;font-size:16px;color:#555;padding:0;line-height:1;transition:color .15s;">🔓</button>
+            </div>
+            <input id="ml-fats" type="number" class="form-input" placeholder="60" oninput="macroLockOnInput('fats')"
+              style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);border-color:rgba(74,222,128,0.2);"/>
+            <div style="font-size:10px;color:var(--muted);text-align:center;letter-spacing:1px;">grams</div>
+          </div>
+        </div>
+
+        <!-- Macro % bar -->
+        <div id="ml-bar" style="display:flex;gap:2px;height:6px;border-radius:3px;overflow:hidden;margin-bottom:8px;background:#111;">
+          <div style="flex:33;background:#00CFFF;height:6px;"></div>
+          <div style="flex:34;background:var(--opt3);height:6px;"></div>
+          <div style="flex:33;background:var(--green);height:6px;border-radius:0 2px 2px 0;"></div>
+        </div>
+
+        <!-- Status row -->
+        <div id="ml-status" style="display:flex;align-items:center;gap:10px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1.5px;margin-bottom:14px;flex-wrap:wrap;">
+          <span style="color:#555;">Enter values above to see balance</span>
+        </div>
+
+        <!-- Info box -->
+        <div style="background:rgba(245,255,0,0.04);border:1px solid rgba(245,255,0,0.1);padding:10px 14px;margin-bottom:14px;font-size:11px;color:#666;line-height:1.6;border-radius:2px;">
+          <span style="color:var(--y);font-weight:700;">How it works:</span> Lock 🔒 any macro you don't want to change.
+          When you edit an unlocked value, the others auto-rebalance to match.
+          Locked macros stay fixed. Calories auto-update from P+C+F unless locked.
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-yellow btn-sm" onclick="macroLockApply()">✅ Apply to Plan</button>
+          <button class="btn btn-outline btn-sm" onclick="macroLockSyncInputs();macroLockUpdateStatus();">🔄 Sync from Targets</button>
+          <button class="btn btn-danger btn-sm" onclick="macroLockReset()">🔓 Clear All Locks</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Additional Info</div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label class="form-label">Daily Water Target (L)</label><input class="form-input" id="t-water" type="number" step="0.5" placeholder="3.0" oninput="syncPreview()"/></div>
+          <div class="form-group"><label class="form-label">Training Time</label><input class="form-input" id="t-traintime" placeholder="e.g. 6:00 PM" oninput="syncPreview()"/></div>
+        </div>
+      </div>
+
+      <!-- ── SMART CARB CYCLING: H/M/L tiers + weekly schedule ── -->
+      <div class="card" id="macro-cycling-panel" style="border-color:rgba(0,207,255,0.2);">
+        <div class="card-title" style="color:#00CFFF;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          📅 Smart Carb Cycling
+          <span style="font-family:'Barlow',sans-serif;font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0;text-transform:none;">3-tier cycling: High / Medium / Low carb days</span>
+        </div>
+
+        <!-- Tier tabs -->
+        <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border2);flex-wrap:wrap;">
+          <button id="cc-tab-H" onclick="ccShowTab('H')"
+            style="padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;border-bottom:2px solid #4ade80;color:#4ade80;background:transparent;transition:all .15s;">
+            🔥 High Carb
+          </button>
+          <button id="cc-tab-M" onclick="ccShowTab('M')"
+            style="padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);background:transparent;transition:all .15s;">
+            ⚡ Medium Carb
+          </button>
+          <button id="cc-tab-L" onclick="ccShowTab('L')"
+            style="padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);background:transparent;transition:all .15s;">
+            ❄️ Low Carb
+          </button>
+        </div>
+
+        <!-- High-Carb Panel -->
+        <div id="cc-panel-H" class="cc-panel">
+          <div style="font-size:11px;color:#4ade80;letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;">High-Carb Day Targets</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Calories</span>
+              <input id="cc-H-cal" type="number" class="form-input" placeholder="2400"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4ade80;border-color:rgba(74,222,128,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">kcal</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Protein</span>
+              <input id="cc-H-prot" type="number" class="form-input" placeholder="180"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4ade80;border-color:rgba(74,222,128,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Carbs</span>
+              <input id="cc-H-carbs" type="number" class="form-input" placeholder="280"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4ade80;border-color:rgba(74,222,128,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Fats</span>
+              <input id="cc-H-fats" type="number" class="form-input" placeholder="65"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4ade80;border-color:rgba(74,222,128,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medium-Carb Panel -->
+        <div id="cc-panel-M" class="cc-panel" style="display:none;">
+          <div style="font-size:11px;color:#00CFFF;letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;">Medium-Carb Day Targets <span style="color:var(--muted);text-transform:none;font-size:10px;">(base plan in meal builder)</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Calories</span>
+              <input id="cc-M-cal" type="number" class="form-input" placeholder="2100"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00CFFF;border-color:rgba(0,207,255,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">kcal</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Protein</span>
+              <input id="cc-M-prot" type="number" class="form-input" placeholder="180"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00CFFF;border-color:rgba(0,207,255,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Carbs</span>
+              <input id="cc-M-carbs" type="number" class="form-input" placeholder="200"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00CFFF;border-color:rgba(0,207,255,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Fats</span>
+              <input id="cc-M-fats" type="number" class="form-input" placeholder="65"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00CFFF;border-color:rgba(0,207,255,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low-Carb Panel -->
+        <div id="cc-panel-L" class="cc-panel" style="display:none;">
+          <div style="font-size:11px;color:var(--opt3);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;">Low-Carb Day Targets</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Calories</span>
+              <input id="cc-L-cal" type="number" class="form-input" placeholder="1800"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--opt3);border-color:rgba(255,140,66,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">kcal</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Protein</span>
+              <input id="cc-L-prot" type="number" class="form-input" placeholder="180"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--opt3);border-color:rgba(255,140,66,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Carbs</span>
+              <input id="cc-L-carbs" type="number" class="form-input" placeholder="120"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--opt3);border-color:rgba(255,140,66,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Fats</span>
+              <input id="cc-L-fats" type="number" class="form-input" placeholder="70"
+                style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--opt3);border-color:rgba(255,140,66,0.3);" oninput="ccSync()"/>
+              <div style="font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;">g</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🧮 Deficit equation strip (rendered by ccRenderEquation) -->
+        <div id="cc-equation-strip" style="display:none;margin-bottom:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(0,207,255,0.15);border-left:3px solid #00CFFF;border-radius:4px;padding:12px 16px;"></div>
+
+        <!-- ⚙️ Carb cycling options -->
+        <div id="cc-options-panel" style="background:rgba(0,207,255,0.04);border:1px solid rgba(0,207,255,0.12);border-radius:4px;padding:12px 16px;margin-bottom:18px;">
+          <div style="font-size:10px;color:#00CFFF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">⚙️ Carb Cycling Options</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="cc-opt-base-label" style="font-size:11px;color:var(--muted);letter-spacing:1px;">Compare vs</span>
+              <select id="cc-opt-base" onchange="ccSetOptBase(this.value)"
+                style="background:#0d0d10;border:1px solid rgba(0,207,255,0.3);color:#00CFFF;border-radius:4px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;outline:none;">
+                <option value="M">🔥/🧊 vs Medium day</option>
+                <option value="targets">vs Main targets</option>
+                <option value="tdee">vs TDEE (maintenance)</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span id="cc-opt-intensity-label" style="font-size:11px;color:var(--muted);letter-spacing:1px;">Intensity:</span>
+              <button class="quick-chip" id="cc-int-chip-gentle" onclick="ccSetIntensity('gentle')">🌤 Gentle</button>
+              <button class="quick-chip" id="cc-int-chip-standard" onclick="ccSetIntensity('standard')">📊 Standard</button>
+              <button class="quick-chip" id="cc-int-chip-aggressive" onclick="ccSetIntensity('aggressive')">🔥 Aggressive</button>
+            </div>
+            <button class="quick-chip" id="cc-opt-daykcal" onclick="ccToggleDayKcal()">🔢 Per-day kcal: OFF</button>
+          </div>
+          <div id="cc-opt-hint" style="font-size:10px;color:var(--muted);letter-spacing:0.5px;">Intensity presets set H &amp; L carbs from your Medium day — protein &amp; fat stay constant across tiers.</div>
+        </div>
+
+        <!-- Smart fill buttons -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+          <button class="btn btn-yellow btn-sm" onclick="ccSmartFill()" title="Auto-calculate all 3 tiers based on goal + body weight">⚡ Smart Fill All Tiers</button>
+          <button class="btn btn-outline btn-sm" style="border-color:rgba(0,207,255,0.3);color:#00CFFF;" onclick="ccPullFromMain()">⬇ Pull Medium from Main Targets</button>
+        </div>
+
+        <!-- Weekly schedule -->
+        <div style="border-top:1px solid var(--border2);padding-top:18px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+            <div id="cc-week-heading" style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Weekly Schedule</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="quick-chip" onclick="ccApplyPreset('fat-loss')">🔥 Fat Loss (1H/2M/4L)</button>
+              <button class="quick-chip" onclick="ccApplyPreset('muscle-gain')">💪 Muscle Gain (4H/2M/1L)</button>
+              <button class="quick-chip" onclick="ccApplyPreset('recomp')">🔄 Recomp (2H/3M/2L)</button>
+              <button class="quick-chip" onclick="ccApplyPreset('maintenance')">⚖️ Maint (2H/4M/1L)</button>
+            </div>
+          </div>
+          <div id="cc-week-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+            <!-- populated by ccRenderWeek() -->
+          </div>
+          <div id="cc-week-hint" style="font-size:10px;color:#444;margin-top:6px;letter-spacing:0.5px;">Tap any day to cycle through H → M → L</div>
+        </div>
+
+        <!-- Weekly summary -->
+        <div id="cc-summary" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);padding:14px 16px;border-radius:2px;display:none;">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📊 Weekly Summary</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;margin-bottom:12px;">
+            <div>
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Avg Daily Cal</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--y);" id="cc-sum-cal">—</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Avg Protein</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--y);" id="cc-sum-prot">—</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Avg Carbs</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--y);" id="cc-sum-carb">—</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Avg Fats</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--y);" id="cc-sum-fat">—</div>
+            </div>
+          </div>
+          <div id="cc-sum-deficit" style="text-align:center;font-size:11px;color:var(--muted);letter-spacing:1px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEALS -->
+    <div class="page" id="page-meals">
+      <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span>Meal Plan</span>
+        <button class="btn btn-sm" onclick="generateAutoMeals()" style="background:rgba(245,255,0,0.08);color:var(--y);border:1px solid rgba(245,255,0,0.25);font-size:11px;padding:6px 14px;">🍽 Auto-Generate</button>
+      </div>
+      <div class="sec-sub">3 options per meal — Arabic RTL</div>
+      <div class="divider"></div>
+      <div id="validation-banner" class="validation-banner"></div>
+      <div id="ramadan-banner-meals" class="ram-banner" style="display:none;"></div>
+      <div id="recent-foods-bar" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;background:var(--card2);border:1px solid var(--border2);padding:8px 12px;margin-bottom:12px;">
+        <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;">🕐 Recent</span>
+        <div id="recent-chips" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+      </div>
+      <div id="cheat-banner" class="cheat-banner"></div>
+      <div id="allergy-banner" class="allergy-banner"></div>
+      <!-- GRAND TOTAL BAR -->
+      <div id="grand-total-bar" style="background:var(--card2);border:1px solid var(--border);margin-bottom:20px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(245,255,0,0.06);border-bottom:1px solid var(--border2);">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--y);">📊 إجمالي كل الوجبات</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="gt-chip" id="cheat-balance-btn" onclick="autoCompensate()" title="Marks one meal as Free then trims carbs & fats from other meals to hit your daily targets — protein stays untouched">🍩 Auto-Balance</button>
+            <button class="gt-chip warn" id="cheat-undo-btn" onclick="cheatUndo()">↩ Undo Trims</button>
+            <span style="font-size:10px;color:var(--muted);" id="gt-status-label">—</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
+          <div class="gt-cell" style="border-right:1px solid var(--border2);padding:12px 8px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;color:#4ade80;" id="gt-cal">—</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">سعرات / <span id="gt-cal-target" style="color:#4ade80;">—</span></div>
+            <div class="gt-bar-wrap"><div class="gt-bar" id="gt-bar-cal" style="background:#4ade80;"></div></div>
+            <div style="font-size:10px;color:#4ade80;font-weight:700;margin-top:3px;" id="gt-pct-cal">—%</div>
+          </div>
+          <div class="gt-cell" style="border-right:1px solid var(--border2);padding:12px 8px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;color:var(--opt2);" id="gt-prot">—</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">بروتين / <span id="gt-prot-target" style="color:var(--opt2);">—</span>غ</div>
+            <div class="gt-bar-wrap"><div class="gt-bar" id="gt-bar-prot" style="background:var(--opt2);"></div></div>
+            <div style="font-size:10px;color:var(--opt2);font-weight:700;margin-top:3px;" id="gt-pct-prot">—%</div>
+          </div>
+          <div class="gt-cell" style="border-right:1px solid var(--border2);padding:12px 8px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;color:var(--y);" id="gt-carb">—</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">كارب / <span id="gt-carb-target" style="color:var(--y);">—</span>غ</div>
+            <div class="gt-bar-wrap"><div class="gt-bar" id="gt-bar-carb" style="background:var(--y);"></div></div>
+            <div style="font-size:10px;color:var(--y);font-weight:700;margin-top:3px;" id="gt-pct-carb">—%</div>
+          </div>
+          <div class="gt-cell" style="padding:12px 8px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;color:var(--opt3);" id="gt-fat">—</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">دهون / <span id="gt-fat-target" style="color:var(--opt3);">—</span>غ</div>
+            <div class="gt-bar-wrap"><div class="gt-bar" id="gt-bar-fat" style="background:var(--opt3);"></div></div>
+            <div style="font-size:10px;color:var(--opt3);font-weight:700;margin-top:3px;" id="gt-pct-fat">—%</div>
+          </div>
+        </div>
+      </div>
+      <!-- MACRO FILTER BAR -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+        <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;">Food Filter:</span>
+        <button class="macro-filter-btn active" data-filter="all"     onclick="setFoodFilter('all')"     >📋 All</button>
+        <button class="macro-filter-btn"         data-filter="prot"    onclick="setFoodFilter('prot')"    >🥩 High Protein</button>
+        <button class="macro-filter-btn"         data-filter="lowcarb" onclick="setFoodFilter('lowcarb')" >🥑 Low Carb</button>
+        <button class="macro-filter-btn"         data-filter="lowfat"  onclick="setFoodFilter('lowfat')"  >🍗 Low Fat</button>
+        <button class="macro-filter-btn"         data-filter="lowcal"  onclick="setFoodFilter('lowcal')"  >🥦 Low Cal</button>
+        <button class="macro-filter-btn"         data-filter="veg"     onclick="setFoodFilter('veg')"     >🌿 Veg/Legume</button>
+      </div>
+      <div id="meals-container"></div>
+    </div>
+
+    <!-- SUPPLEMENTS -->
+    <div class="page" id="page-supplements">
+      <div class="sec-title">Supplement Stack</div>
+      <div class="sec-sub">Add supplements with dose and timing</div>
+      <div class="divider"></div>
+      <div id="ramadan-banner-supps" class="ram-banner" style="display:none;"></div>
+      <div class="card" style="border-color:rgba(0,207,255,0.2);">
+        <div class="card-title" style="color:#00CFFF;">🛒 Supplement Catalog — tap to add</div>
+        <input id="supp-search" class="form-input" placeholder="🔍  Search supplements by name..." oninput="suppRenderCatalog()" style="margin-bottom:12px;"/>
+        <div id="supp-cat-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"></div>
+        <div id="supp-grid" class="supp-grid"></div>
+        <div id="supp-catalog-empty" style="display:none;text-align:center;padding:24px;color:#333;font-size:13px;">No supplements match your search.</div>
+      </div>
+      <div class="card" id="supp-timeline-card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span>🕐 Day Timeline — when each item hits</span>
+          <span id="supp-tl-train-label" style="font-size:10px;color:var(--muted);letter-spacing:1px;"></span>
+        </div>
+        <div class="card-sub" style="color:var(--muted);font-size:11px;letter-spacing:1px;margin-bottom:14px;" id="supp-tl-sub">
+          The clock shows every supplement placed on the 24-hour day — anchored around workout time
+        </div>
+        <div id="supp-clock-wrap" style="display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;">
+          <svg id="supp-clock" class="supp-clock" viewBox="0 0 240 240" role="img" aria-label="24 hour supplement clock"></svg>
+          <div id="supp-tl-legend" class="supp-tl-legend"></div>
+        </div>
+        <div id="supp-tl-empty" style="text-align:center;padding:18px;color:#333;font-size:12px;">No supplements in the stack yet — add some from the catalog or the stack editor below.</div>
+        <div id="supp-tl-list" class="supp-tl-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💊 Supplement Stack (client plan)</div>
+        <div id="supp-conflicts" style="margin-bottom:10px;"></div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 2fr 28px;gap:8px;margin-bottom:8px;margin-top:12px;">
+          <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Supplement</span>
+          <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Dose</span>
+          <span style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Timing</span>
+          <span></span>
+        </div>
+        <div id="supp-rows"></div>
+        <button class="add-food-btn" onclick="addSuppRow()">+ Add Supplement</button>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="page" id="page-notes">
+      <div class="sec-title">Coach Notes</div>
+      <div class="sec-sub">Add coaching instructions to the plan</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>📝 Notes</span>
+          <button class="btn btn-sm btn-outline" onclick="showNoteTemplates()" style="font-size:10px;padding:4px 10px;">📋 Templates</button>
+        </div>
+        <div id="note-templates" style="display:none;margin-bottom:12px;background:var(--card2);border:1px solid var(--border2);padding:12px;gap:6px;flex-wrap:wrap;">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;width:100%;margin-bottom:6px;">Quick Templates — click to append</div>
+          <button onclick="appendNote('⏰ Meal Timing: Try to eat every 3-4 hours. Do not skip meals.\n')" class="quick-chip">⏰ Meal Timing</button>
+          <button onclick="appendNote('💧 Water: Drink 3-4 litres of water daily.\n')" class="quick-chip">💧 Water</button>
+          <button onclick="appendNote('🏋 Pre-Workout: Consume carbs + protein 60-90 min before training.\n')" class="quick-chip">🏋 Pre-Workout</button>
+          <button onclick="appendNote('💪 Post-Workout: Consume protein + fast carbs within 30 min after training.\n')" class="quick-chip">💪 Post-Workout</button>
+          <button onclick="appendNote('😴 Sleep: Aim for 7-8 hours of quality sleep every night.\n')" class="quick-chip">😴 Sleep</button>
+          <button onclick="appendNote('🚫 Avoid: Processed foods, fried foods, sodas, and added sugars.\n')" class="quick-chip">🚫 Avoid List</button>
+          <button onclick="appendNote('✅ Follow this plan strictly for 4 weeks then re-evaluate.\n')" class="quick-chip">✅ 4-Week Commitment</button>
+          <button onclick="appendNote('📏 Measure progress weekly: weight (same time, same conditions).\n')" class="quick-chip">📏 Track Progress</button>
+          <button onclick="appendNote('🌙 Ramadan: Suhoor should be your largest meal. Break fast with dates and water.\n')" class="quick-chip">🌙 Ramadan</button>
+          <button onclick="appendNote('⚠️ If you feel dizzy, weak or unwell — eat immediately and contact me.\n')" class="quick-chip">⚠️ Emergency</button>
+        </div>
+        <div class="form-group"><textarea class="form-input" id="coach-notes" style="min-height:200px;line-height:1.7;" placeholder="Add coaching instructions, reminders and tips for the client..." oninput="syncPreview()"></textarea></div>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="page" id="page-preview">
+      <div class="sec-title">Plan Preview</div>
+      <div class="sec-sub">Live preview of the nutrition plan</div>
+      <div class="divider"></div>
+      <div class="preview-wrap">
+        <div class="preview-topbar">
+          <span class="preview-title">Preview</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="exportPDF(this)" style="color:#f87171;border-color:rgba(248,113,113,0.35);">📄 PDF</button>
+            <button class="btn btn-yellow btn-sm" onclick="openThemeModal()">⬇ Export .docx</button>
+          </div>
+        </div>
+        <div class="preview-body" id="preview-body"></div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="page" id="page-progress">
+      <div class="sec-title">Progress Tracker</div>
+      <div class="sec-sub">Weekly weight, body-fat &amp; photos — saved per client</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="card-title">📈 Weekly Check-in — <span id="prog-client-name" style="color:#00CFFF;">—</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr auto;gap:8px;align-items:end;flex-wrap:wrap;">
+          <div class="form-group" style="margin:0;"><label class="form-label">Date</label><input class="form-input" id="prog-date" type="date" onchange="progLoadDefaults()"/></div>
+          <div class="form-group" style="margin:0;"><label class="form-label">Weight (kg)</label><input class="form-input" id="prog-w" type="number" step="0.1" placeholder="76.5"/></div>
+          <div class="form-group" style="margin:0;"><label class="form-label">Body Fat %</label><input class="form-input" id="prog-bf" type="number" step="0.1" placeholder="optional"/></div>
+          <div class="form-group" style="margin:0;"><label class="form-label">Photo (optional)</label><input class="form-input" id="prog-photo-input" type="file" accept="image/*" capture="user" style="padding:5px;"/></div>
+          <button class="btn btn-yellow btn-sm" onclick="progAdd()" style="height:38px;">➕ Add</button>
+        </div>
+        <input class="form-input" id="prog-note" placeholder="Note (optional): e.g. feeling strong, Ramadan week..." style="margin-top:8px;"/>
+      </div>
+      <div class="card">
+        <div class="card-title">⚖️ Weight Chart</div>
+        <div id="prog-chart-wrap" style="padding:6px 0;"></div>
+        <div id="prog-empty" style="display:none;text-align:center;padding:30px 10px;color:#333;font-size:13px;">
+          No check-ins yet — add the first one above. One entry per week is enough.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 History</div>
+        <div id="prog-list"></div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <div class="page" id="page-templates">
+      <div class="sec-title">Plan Templates</div>
+      <div class="sec-sub">Save any completed plan — one click loads it for the next client</div>
+      <div class="divider"></div>
+      <div class="card" style="border-color:rgba(74,222,128,0.2);">
+        <div class="card-title" style="color:#4ade80;">💾 Save Current Plan as Template</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input class="form-input" id="tpl-name-input" placeholder='Template name: e.g. "Cutting female 70kg" / "Bulking student"' style="flex:1;min-width:220px;" onkeydown="if(event.key==='Enter'){event.preventDefault();tplSaveCurrent();}"/>
+          <button class="btn btn-yellow btn-sm" onclick="tplSaveCurrent()" style="height:40px;">💾 Save Template</button>
+        </div>
+        <div style="font-size:10px;color:#333;margin-top:8px;">Templates save the full plan: targets, meals, supplements, carb-cycling week &amp; notes (client names excluded).</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗂 Template Library</div>
+        <div id="tpl-grid" class="supp-grid"></div>
+        <div id="tpl-empty" style="display:none;text-align:center;padding:30px 10px;color:#333;font-size:13px;">
+          No templates yet — finish a plan, save it above, and it appears here forever.
+        </div>
+      </div>
+    </div>
+
+    <!-- GROCERY -->
+    <div class="page" id="page-grocery">
+      <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span>Grocery List</span>
+        <button class="btn btn-sm" onclick="groceryRender()" style="background:rgba(245,255,0,0.08);color:var(--y);border:1px solid rgba(245,255,0,0.25);font-size:11px;padding:6px 14px;">🔄 Build from Meals</button>
+      </div>
+      <div class="sec-sub">Shopping list aggregated from every meal in the plan</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span>🧾 Shopping List</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="grocery-opt-chip on" id="gro-chip-1" onclick="groceryToggleOpt(1)">Option 1</button>
+            <button class="grocery-opt-chip on" id="gro-chip-2" onclick="groceryToggleOpt(2)">Option 2</button>
+            <button class="grocery-opt-chip on" id="gro-chip-3" onclick="groceryToggleOpt(3)">Option 3</button>
+            <button class="btn btn-sm" onclick="groceryCopy()" style="background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);font-size:11px;padding:5px 12px;">📋 Copy List</button>
+          </div>
+        </div>
+        <div id="grocery-summary" style="display:none;background:rgba(0,0,0,0.3);border-bottom:1px solid var(--border2);padding:10px 16px;margin-bottom:12px;display:none;"></div>
+        <div id="grocery-groups"></div>
+        <div class="grocery-empty" id="grocery-empty">
+          <div class="g-ic">🛒</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);letter-spacing:2px;">No Foods in the Plan Yet</div>
+          <div style="font-size:13px;color:#444;margin-top:6px;">Build the meals first, then come back here — the list builds itself.</div>
+          <button class="btn btn-yellow" style="margin-top:16px;" onclick="showPage('meals')">🍽 Go to Meals</button>
+        </div>
+        <div style="font-size:10px;color:#444;margin-top:10px;letter-spacing:0.5px;" id="grocery-hint">Tip: tap an item to exclude/include it (e.g. foods the client buys weekly).</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="fab-quick" id="fab-quick-btn" onclick="fabQuickAdd()" title="Quick add food to active meal" style="display:none;">＋</button>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 💾 SAVE / LOAD MODAL                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="save-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#111;border:1px solid rgba(245,255,0,0.25);border-radius:12px;width:min(520px,95vw);max-height:90vh;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 20px 60px rgba(0,0,0,0.9);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(245,255,0,0.12);background:rgba(245,255,0,0.05);">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#F5FF00;letter-spacing:2px;">💾 Save / Load Plans</div>
+        <div style="font-size:11px;color:#555;letter-spacing:1px;margin-top:2px;">Plans are saved locally in your browser</div>
+      </div>
+      <button onclick="closeSaveModal()" style="background:none;border:none;color:#555;cursor:pointer;font-size:22px;padding:4px 8px;transition:color .15s;" onmouseover="this.style.color='#F5FF00'" onmouseout="this.style.color='#555'">✕</button>
+    </div>
+    <div style="padding:20px 22px;">
+  <input type="file" id="plan-json-input" accept=".json,application/json" style="display:none" onchange="importPlanFile(this)"/>
+      <!-- Quick Save -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Quick Save to Slot</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;" id="save-slots-grid"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+          <span id="slot-count-label" style="font-size:10px;color:#555;letter-spacing:1px;">20 / 100 slots</span>
+          <span style="flex:1"></span>
+          <button onclick="addSaveSlots(10)" style="background:rgba(245,255,0,0.06);border:1px solid rgba(245,255,0,0.25);color:#F5FF00;padding:5px 12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;border-radius:3px;transition:all .15s;" onmouseover="this.style.background='rgba(245,255,0,0.14)'" onmouseout="this.style.background='rgba(245,255,0,0.06)'">＋ Add 10 Slots</button>
+          <button onclick="removeSaveSlots(10)" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);color:#888;padding:5px 12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;border-radius:3px;transition:all .15s;" onmouseover="this.style.color='#f87171';this.style.borderColor='rgba(248,113,113,0.3)'" onmouseout="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">− Remove 10 Slots</button>
+        </div>
+      </div>
+      <!-- Plan file share -->
+      <div style="margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Share via File (device ↔ device)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="exportPlanFile()" style="color:#00CFFF;border-color:rgba(0,207,255,0.3);">📤 Export Plan File (.json)</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('plan-json-input').click()" style="color:#FF8C42;border-color:rgba(255,140,66,0.3);">📂 Import Plan File</button>
+        </div>
+      </div>
+      <!-- Saved Plans -->
+      <div>
+        <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Saved Plans</div>
+        <div id="saved-plans-list"></div>
+        <div id="save-empty" style="text-align:center;padding:24px;color:#333;font-size:13px;display:none;">No saved plans yet. Save your first plan above! 💪</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/logo.js"></script>
+
+<script src="../vendor/docx.iife.js"></script>
+
+<script src="js/app.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 💾 SAVE/LOAD + 📅 MACRO CYCLING + 🧠 REAL AI ENHANCEMENTS   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script src="js/enhancements.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 🤖 كوتش لؤي - المساعد الذكي للتغذية الرياضية (أوفلاين كامل) -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+
+
+<!-- FAB BUTTON -->
+<button id="clai-fab" onclick="claiToggle()" title="مساعد كوتش لؤي الذكي">
+  🤖
+  <span id="clai-badge" style="display:none">1</span>
+</button>
+
+<!-- CHAT PANEL -->
+<div id="clai-panel">
+  <div id="clai-head">
+    <div class="clai-avatar">🏋️</div>
+    <div class="clai-info">
+      <div class="clai-name">مساعد كوتش لؤي</div>
+      <div class="clai-status">✅ مساعد التغذية الذكي</div>
+      <div class="clai-sub">خبير التغذية الرياضية الذكي</div>
+    </div>
+    <button id="clai-close" onclick="claiToggle()">✕</button>
+  </div>
+
+  <div id="clai-msgs">
+    <div id="clai-typing" class="clai-msg bot">
+      <div class="clai-mini-avatar">🏋️</div>
+      <div id="clai-typing-dots" style="display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(245,255,0,0.06);border:1px solid rgba(245,255,0,0.12);border-radius:14px;border-bottom-right-radius:4px;">
+        <div class="clai-dot"></div><div class="clai-dot"></div><div class="clai-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="clai-suggestions"></div>
+
+  <div id="clai-input-row">
+    <button id="clai-send" onclick="claiSend()">➤</button>
+    <textarea id="clai-input" placeholder="اسألني عن التغذية والرياضة..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();claiSend();}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+  </div>
+</div>
+
+<script src="js/assistant.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 👥 CLIENT HISTORY / ROSTER SYSTEM                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script src="js/clients.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 📂 IMPORT .DOCX MODAL                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="import-modal">
+  <div id="import-modal-box">
+    <div class="imp-header">
+      <div class="imp-title">📂 Import Word Plan</div>
+      <button class="imp-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="imp-body">
+
+      <!-- Drop zone (shown before file selected) -->
+      <div class="imp-drop-zone" id="imp-drop-zone" onclick="triggerDocxImport()" 
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="event.preventDefault();this.classList.remove('drag-over');handleDocxDrop(event)">
+        <div class="imp-drop-icon">📄</div>
+        <div class="imp-drop-text">Drop your .docx file here</div>
+        <div class="imp-drop-sub">or click to browse — supports any Olympic Gym Word plan</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="imp-progress" id="imp-progress">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;color:var(--opt3);text-transform:uppercase;" id="imp-prog-text">Reading file...</div>
+        <div class="imp-prog-bar-wrap"><div class="imp-prog-bar" id="imp-prog-bar"></div></div>
+      </div>
+
+      <!-- Parsed results (hidden until parsed) -->
+      <div id="imp-results" style="display:none;">
+
+        <!-- Client Info section -->
+        <div class="imp-section">
+          <div class="imp-section-title">👤 Client Info — Review & Edit</div>
+          <div class="imp-field-row"><span class="imp-field-label">Client Name</span><input class="imp-field-val editable" id="imp-c-name" placeholder="—"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Arabic Name</span><input class="imp-field-val editable" id="imp-c-name-ar" placeholder="—" style="direction:rtl"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Coach</span><input class="imp-field-val editable" id="imp-c-coach" placeholder="Coach Loai Hassan"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Goal</span><input class="imp-field-val editable" id="imp-c-goal" placeholder="Fat Loss / Muscle Gain…"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Phase</span><input class="imp-field-val editable" id="imp-c-phase" placeholder="Phase 1 / Ramadan…"/></div>
+        </div>
+
+        <!-- Macros section -->
+        <div class="imp-section">
+          <div class="imp-section-title">🎯 Daily Targets — Review & Edit</div>
+          <div class="imp-field-row"><span class="imp-field-label">Calories (kcal)</span><input class="imp-field-val editable" id="imp-t-cal" type="number" placeholder="—"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Protein (g)</span><input class="imp-field-val editable" id="imp-t-prot" type="number" placeholder="—"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Carbs (g)</span><input class="imp-field-val editable" id="imp-t-carbs" type="number" placeholder="—"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Fats (g)</span><input class="imp-field-val editable" id="imp-t-fats" type="number" placeholder="—"/></div>
+          <div class="imp-field-row"><span class="imp-field-label">Water (L)</span><input class="imp-field-val editable" id="imp-t-water" type="number" step="0.1" placeholder="—"/></div>
+        </div>
+
+        <!-- Meals section -->
+        <div class="imp-section" id="imp-meals-section">
+          <div class="imp-section-title">🍽 Detected Meals</div>
+          <div class="imp-meal-grid" id="imp-meals-grid"></div>
+        </div>
+
+        <!-- Supplements section -->
+        <div class="imp-section" id="imp-supps-section" style="display:none;">
+          <div class="imp-section-title">💊 Detected Supplements</div>
+          <div id="imp-supps-list" style="font-size:12px;color:var(--muted);line-height:2;"></div>
+        </div>
+
+        <!-- Notes section -->
+        <div class="imp-section" id="imp-notes-section" style="display:none;">
+          <div class="imp-section-title">📝 Coach Notes</div>
+          <textarea class="imp-field-val editable" id="imp-coach-notes" rows="4" style="width:100%;resize:vertical;"></textarea>
+        </div>
+
+        <!-- Raw extracted text -->
+        <div class="imp-section">
+          <div class="imp-section-title" style="cursor:pointer;" onclick="toggleRawText()">📋 Raw Extracted Text <span style="font-size:10px;color:#444;" id="imp-raw-toggle">[show]</span></div>
+          <div class="imp-raw" id="imp-raw-text" style="display:none;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="imp-footer">
+      <button class="btn btn-danger" onclick="closeImportModal()">Cancel</button>
+      <button class="btn btn-outline" id="imp-apply-btn" onclick="applyImportedPlan()" style="display:none;color:var(--opt3);border-color:rgba(255,140,66,0.4);">✅ Apply to Plan</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/docx-import.js"></script>
+
+<!-- ── OG branding: topbar logo + favicon + iOS home-screen icon ── -->
+<script src="js/branding.js"></script>
+
+<!-- ── Motion: smooth close transitions for modals & overlays ── -->
+<script src="js/motion.js"></script>
+</body>
+</html>

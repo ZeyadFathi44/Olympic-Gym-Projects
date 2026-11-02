@@ -1,0 +1,17 @@
+.og-bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;display:none;height:62px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(8,8,8,.88);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border-top:1px solid rgba(245,255,0,.14);}
+.og-bnav::-webkit-scrollbar{display:none;}
+.og-bnav .bi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 10px;min-width:58px;cursor:pointer;border-top:2px solid transparent;transition:all .15s;flex-shrink:0;}
+.og-bnav .bi .ic{font-size:17px;line-height:1;}
+.og-bnav .bi .lb{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.og-bnav .bi.active{border-top-color:var(--y);}
+.og-bnav .bi.active .lb{color:var(--y);}
+/* 🤖 AI helper FAB — compact 35×35 (emoji 20px); lifted above the bottom bar on mobile */
+#clai-fab{width:35px !important;height:35px !important;font-size:20px !important;bottom:calc(14px + env(safe-area-inset-bottom,0px)) !important;right:calc(14px + env(safe-area-inset-right,0px)) !important;}
+#clai-fab:hover{transform:scale(1.15);}
+#clai-badge{top:-3px !important;right:-3px !important;width:12px !important;height:12px !important;font-size:7px !important;}
+@media(max-width:900px){
+  .og-bnav{display:flex;}
+  body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px)) !important;}
+  /* keep the FAB clear of the 62px bottom bar */
+  #clai-fab{bottom:calc(76px + env(safe-area-inset-bottom,0px)) !important;}
+}

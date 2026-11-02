@@ -1,0 +1,64 @@
+/* 📸 same gym photo backdrop as the Nutrition app (identical body::before) */
+html{background:#080808;}
+body{background:transparent !important;}
+body::before{
+  content:'';
+  position:fixed;
+  inset:-48px;
+  z-index:-1;
+  background:
+    linear-gradient(180deg,rgba(5,5,6,0.62) 0%,rgba(5,5,6,0.48) 42%,rgba(5,5,6,0.76) 100%),
+    url('../assets/gym-bg.jpg') center/cover no-repeat;
+  -webkit-filter:blur(16px) saturate(1.15) brightness(0.95);
+  filter:blur(16px) saturate(1.15) brightness(0.95);
+  transform:scale(1.04);
+  pointer-events:none;
+}
+.card,.dbpage-card,.split-card,.vol-card,#dbpage-list > div{background:rgba(20,20,20,.60) !important;border:1px solid rgba(255,255,255,.08) !important;border-radius:16px !important;backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);box-shadow:0 12px 34px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06);}
+.fi,.ex-row input,select.fi,textarea.fi{background:rgba(255,255,255,.045) !important;border:1px solid rgba(255,255,255,.10) !important;border-radius:12px !important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#e8e8e8 !important;}
+.fi:focus{border-color:rgba(245,255,0,.45) !important;box-shadow:0 0 0 3px rgba(245,255,0,.10);}
+.btn{border-radius:12px !important;}
+.btn-y{box-shadow:0 6px 22px rgba(245,255,0,.25) !important;}
+.btn-o{background:rgba(255,255,255,.05) !important;border:1px solid rgba(255,255,255,.12) !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.topbar{background:rgba(9,9,9,.62) !important;backdrop-filter:blur(26px) saturate(1.7);-webkit-backdrop-filter:blur(26px) saturate(1.7);border-bottom:1px solid rgba(255,255,255,.08) !important;}
+/* topbar keeps a clean single-line shape (no mid-text wrapping, no clipped buttons) */
+.topbar .tlogo{white-space:nowrap;flex-shrink:0;}
+.topbar .tsub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+@media(max-width:1019px){
+  .topbar .btn{display:none !important;}   /* shortcuts live in the sidebar (Analytics + Export) */
+}
+.sidebar{background:rgba(12,12,12,.78) !important;backdrop-filter:blur(26px) saturate(1.6);-webkit-backdrop-filter:blur(26px) saturate(1.6);border-right:1px solid rgba(255,255,255,.08) !important;}
+.gif-modal .gif-box,#exdb-modal .exdb-box,.modal-box{border-radius:18px !important;background:rgba(16,16,16,.88) !important;backdrop-filter:blur(30px) saturate(1.6);-webkit-backdrop-filter:blur(30px) saturate(1.6);}
+/* ── hamburger + collapsible sidebar (same idea as Nutrition plan) ── */
+.og-burger{display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);color:var(--y);padding:7px 12px;font-size:17px;cursor:pointer;line-height:1;border-radius:10px;margin-right:2px;}
+.og-burger:hover{background:rgba(245,255,0,.08);}
+.og-sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:299;}
+.og-sb-overlay.show{display:block;}
+/* 📱 mobile: keep the original bottom bar + nutrition-style slide drawer (260px) */
+@media(max-width:1019px){
+  /* the builder only styles .ni/.ns for desktop — clone nutrition's drawer item look for phone */
+  .ns{padding:0 16px 8px;font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:20px;}
+  .ni{display:flex;align-items:center;gap:10px;padding:13px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .15s;border-left:2px solid transparent;white-space:nowrap;}
+  .ni:hover{color:var(--text);background:rgba(245,255,0,.04);}
+  .ni.active{color:var(--y);border-left-color:var(--y);background:rgba(245,255,0,.06);}
+  .ni .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+  .sidebar{display:block !important;position:fixed !important;top:0 !important;left:-260px !important;width:260px !important;height:100vh !important;height:100dvh !important;z-index:300 !important;transition:left .25s ease !important;box-shadow:none !important;background:rgba(12,12,14,0.6) !important;border-right:1px solid rgba(245,255,0,0.08) !important;padding-top:calc(64px + env(safe-area-inset-top,0px)) !important;padding-bottom:env(safe-area-inset-bottom,0px) !important;}
+  body.sb-open .sidebar{left:0 !important;box-shadow:8px 0 32px rgba(0,0,0,.8) !important;}
+}
+@media(min-width:1020px){
+  body.sb-collapsed .sidebar{display:none !important;}
+  /* collapse fix: sidebar is removed, so main must take the full 1fr track
+     (with the old "0 1fr" main landed in the 0-track and squashed) */
+  body.sb-collapsed .app{grid-template-columns:1fr !important;}
+  body.sb-collapsed .main{min-width:0 !important;width:100% !important;}
+}
+/* ── app switcher + export submenu (sidebar items) ── */
+.ni.og-switch{margin-top:6px;}
+.ni.og-switch .ic{filter:grayscale(1) brightness(1.5);}
+.ni.og-switch.active{color:var(--y);border-left-color:var(--y);background:rgba(245,255,0,.08);}
+.ni.og-switch.active .ic{filter:none;}
+.og-exp{display:none;padding:2px 0 6px 44px;flex-direction:column;gap:2px;}
+.og-exp.show{display:flex;}
+.og-exp-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .15s;}
+.og-exp-opt:hover{color:var(--y);background:rgba(245,255,0,.07);}
+.og-exp-opt .oi{font-size:13px;width:18px;text-align:center;}
