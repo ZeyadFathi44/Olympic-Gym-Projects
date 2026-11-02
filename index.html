@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Olympic Gym"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="theme-color" content="#080808"/>
+  <meta name="color-scheme" content="dark"/>
+  <script src="assets/js/storage-shim.js"></script>
+  <title>Olympic Gym — Projects</title>
+  <link rel="manifest" href="manifest.json" id="pwa-manifest"/>
+  <link rel="apple-touch-icon" href="assets/shield.png" id="apple-icon"/>
+  <link rel="icon" type="image/png" href="assets/shield.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/shell.css"/>
+</head>
+<body>
+  <div id="bg"></div>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+  <div id="og-loading">
+    <img id="og-logo" src="assets/shield.png" alt="Olympic Gym"/>
+    <div class="lg-name">OLYMPIC GYM</div>
+    <div class="lg-sub">Projects</div>
+    <div class="lg-bar"><div></div></div>
+    <noscript>
+      <div class="noscript-overlay">
+        <div class="noscript-title">&#9888;&#65039; THIS PREVIEW CANNOT RUN THE APP</div>
+        <div class="noscript-body">
+          iPhone / iPad opens HTML files as a static preview with no JavaScript, so the app stays on this loading screen forever.<br/><br/>
+          <b class="noscript-highlight">How to run it:</b><br/>
+          1&#65039;&#8419; Host this file online (free: Vercel, Netlify Drop, or GitHub Pages) &rarr; open the HTTPS link in Safari.<br/>
+          2&#65039;&#8419; Or use a file browser app that runs HTML, e.g. <b>Documents by Readdle</b> (free on the App Store).
+        </div>
+      </div>
+    </noscript>
+  </div>
+
+  <div id="topbar">
+    <img class="logo" id="tb-logo" src="assets/shield.png" alt=""/>
+    <div>
+      <div class="t-name">Olympic Gym</div>
+      <div class="t-sub">Projects &nbsp;|&nbsp; Coach Loai Hassan</div>
+    </div>
+    <div class="tspace"></div>
+    <div class="t-date" id="t-date"></div>
+  </div>
+
+  <iframe id="frame-programs" class="frame" title="Training Programs"></iframe>
+  <iframe id="frame-nutrition" class="frame hidden" title="Nutrition Plan Maker"></iframe>
+
+  <div id="og-nboot"><div class="pill">🥗 LOADING NUTRITION…</div></div>
+
+  <script src="assets/js/shield-b64.js"></script>
+  <script src="js/shell.js"></script>
+</body>
+</html>

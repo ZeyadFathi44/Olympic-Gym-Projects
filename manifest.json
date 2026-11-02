@@ -1,0 +1,23 @@
+{
+  "name": "Olympic Gym — Projects",
+  "short_name": "Olympic Gym",
+  "description": "Training Program Builder + Nutrition Plan Maker — Coach Loai Hassan",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "icons": [
+    {
+      "src": "assets/shield.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/shield.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

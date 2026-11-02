@@ -1,0 +1,11 @@
+.gif-modal{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:10000;display:none;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:16px;}
+.gif-modal.show{display:flex;}
+.gif-box{background:#0f0f0f;border:1px solid var(--border);border-top:3px solid var(--y);max-width:560px;width:100%;padding:18px;position:relative;text-align:center;max-height:92vh;overflow-y:auto;}
+.gif-x{position:absolute;top:10px;right:10px;background:#1a1a1a;border:1px solid #2a2a2a;color:#666;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;line-height:30px;text-align:center;}
+.gif-name{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--y);letter-spacing:2px;margin-bottom:2px;padding-right:34px;}
+.gif-muscle{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.gif-img{width:100%;max-width:360px;margin:0 auto;display:block;border:1px solid #1a1a1a;background:#000;min-height:200px;object-fit:contain;image-rendering:auto;filter:saturate(1.14) contrast(1.07) brightness(1.04);}
+.gif-note{font-size:12px;color:#777;margin-top:10px;font-style:italic;}
+.exdb-thumb{height:52px;width:72px;object-fit:cover;border:1px solid #222;background:#000;flex-shrink:0;border-radius:2px;image-rendering:auto;filter:saturate(1.15) contrast(1.05);}
+.exdb-play{color:var(--y);font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;border:1px solid rgba(245,255,0,.35);padding:3px 8px;border-radius:2px;text-decoration:none;flex-shrink:0;background:rgba(245,255,0,.06);}
+.exdb-gifbtn{color:#7fbdff;font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;border:1px solid rgba(0,207,255,.3);padding:3px 8px;border-radius:2px;cursor:pointer;flex-shrink:0;background:#001519;}

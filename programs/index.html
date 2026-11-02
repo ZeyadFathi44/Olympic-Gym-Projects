@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<script src="../assets/js/storage-shim.js"></script>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Olympic Gym &#x2014; Training Program Builder V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/main.css"/>
+<link rel="stylesheet" href="css/gif-modal.css"/>
+<link rel="stylesheet" href="css/db-page.css"/>
+<link rel="stylesheet" href="../css/liquid-programs.css"/>
+</head>
+<body>
+<datalist id="ex-list-all"></datalist>
+
+<div class="topbar">
+  <div class="tlogo">Olympic Gym</div>
+  <div class="tsub">Training Program Builder &nbsp;|&nbsp; V2</div>
+  <div class="tspace"></div>
+  <button class="btn btn-o btn-sm" onclick="showPage('analytics')">&#x1F4CA; Analytics</button>
+  <button class="btn btn-o btn-sm" onclick="exportXlsx()">&#x1F4CA; Export .xlsx</button>
+  <button class="btn btn-y btn-sm" onclick="exportDocx()">&#x2B07; Export .docx</button>
+</div>
+
+<div class="loading" id="loading">
+  <div class="spin"></div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--y);letter-spacing:3px;">BUILDING WORD FILE...</div>
+</div>
+
+<!-- iOS download sheet -->
+<div class="dl-sheet" id="dl-sheet">
+  <div class="dl-box">
+    <button class="dl-x" onclick="closeDocxSheet()">&#x2715;</button>
+    <div style="font-size:9px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;">Olympic Gym Training Program</div>
+    <div class="dl-fname" id="dl-fname">Program.docx</div>
+    <div class="dl-sub">Your file is ready to save</div>
+    <a class="dl-open" id="dl-link" href="#" target="_blank">Open File &#x279C;</a>
+    <div class="dl-steps">
+      <div class="dl-stitle">To save on iPhone / iPad</div>
+      <div class="dl-step"><div class="dl-num">1</div><div class="dl-stxt">Tap <strong style="color:#ddd">Open File</strong> above</div></div>
+      <div class="dl-step"><div class="dl-num">2</div><div class="dl-stxt">Tap the <strong style="color:#ddd">Share</strong> icon &#x2197; at the bottom of Safari</div></div>
+      <div class="dl-step"><div class="dl-num">3</div><div class="dl-stxt">Choose <strong style="color:#ddd">Save to Files</strong></div></div>
+    </div>
+    <button class="dl-alt" onclick="altDocxDownload()">Try Alternative Method</button>
+  </div>
+</div>
+
+<!-- Exercise Database Modal -->
+<div class="exdb-modal" id="exdb-modal">
+  <div class="exdb-box">
+    <div class="exdb-head">
+      <div class="exdb-title">&#x1F4DA; Exercise Database</div>
+      <input class="exdb-search" id="exdb-search" placeholder="Search exercises..." oninput="filterExDB()" />
+      <button class="exdb-close" onclick="closeExDB()">&#x2715;</button>
+    </div>
+    <div class="exdb-filter" id="exdb-filter"></div>
+    <div class="exdb-list" id="exdb-list"></div>
+  </div>
+</div>
+
+<div class="app">
+  <nav class="sidebar">
+    <div class="ns">Setup</div>
+    <div class="ni active" onclick="showPage('client')" data-page="client"><span class="ic">&#x1F464;</span> Athlete</div>
+    <div class="ni" onclick="showPage('program')" data-page="program"><span class="ic">&#x1F4CB;</span> Program</div>
+    <div class="ni" onclick="showPage('split')" data-page="split"><span class="ic">&#x26A1;</span> Smart Split</div>
+    <div class="ns">Build</div>
+    <div class="ni" onclick="showPage('builder')" data-page="builder"><span class="ic">&#x1F3CB;</span> Builder</div>
+    <div class="ni" onclick="showPage('tools')" data-page="tools"><span class="ic">&#x1F9EE;</span> Tools</div>
+    <div class="ns">Output</div>
+    <div class="ni" onclick="showPage('analytics')" data-page="analytics"><span class="ic">&#x1F4CA;</span> Analytics</div>
+    <div class="ni" onclick="exportXlsx()"><span class="ic">&#x1F4CA;</span> Export .xlsx</div>
+ <div class="ni" onclick="exportDocx()"><span class="ic">&#x1F4E5;</span> Export .docx</div>
+  </nav>
+  <main class="main">
+
+    <!-- ATHLETE -->
+    <div class="page active" id="page-client">
+      <div class="sec-title">Athlete Profile</div>
+      <div class="sec-sub">Client information for the program document</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="ct">Personal Details</div>
+        <div class="grid2" style="display:grid;gap:12px">
+          <div class="fg"><label class="fl">Full Name</label><input class="fi" id="c-name" placeholder="e.g. Ahmed Hassan" oninput="STATE.client.name=this.value"/></div>
+          <div class="fg"><label class="fl">Age</label><input class="fi" id="c-age" type="number" placeholder="25" oninput="STATE.client.age=this.value"/></div>
+          <div class="fg"><label class="fl">Weight (kg)</label><input class="fi" id="c-weight" type="number" step="0.1" placeholder="80" oninput="STATE.client.weight=this.value"/></div>
+          <div class="fg"><label class="fl">Height (cm)</label><input class="fi" id="c-height" type="number" placeholder="175" oninput="STATE.client.height=this.value"/></div>
+          <div class="fg"><label class="fl">Training Goal</label>
+            <select class="fi" id="c-goal" onchange="STATE.client.goal=this.value; if(window.v2OnGoalChange) v2OnGoalChange(this.value)">
+              <option value="hypertrophy">Muscle Hypertrophy</option>
+              <option value="strength">Strength</option>
+              <option value="endurance">Muscular Endurance</option>
+              <option value="fat-loss">Fat Loss / Body Recomp</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Training Level</label>
+            <select class="fi" id="c-level" onchange="STATE.client.level=this.value">
+              <option value="beginner">Beginner (&lt;1 year)</option>
+              <option value="intermediate" selected>Intermediate (1&#x2013;3 years)</option>
+              <option value="advanced">Advanced (3+ years)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Health Notes</div>
+        <div class="fg"><label class="fl">Injuries / Restrictions</label><textarea class="fi" id="c-injuries" style="min-height:80px" placeholder="Any injuries, limitations, or exercises to avoid..." oninput="STATE.client.injuries=this.value"></textarea></div>
+      </div>
+    </div>
+
+    <!-- PROGRAM -->
+    <div class="page" id="page-program">
+      <div class="sec-title">Program Setup</div>
+      <div class="sec-sub">Define the training program structure</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="ct">Program Details</div>
+        <div class="grid2" style="display:grid;gap:12px">
+          <div class="fg"><label class="fl">Program Name</label><input class="fi" id="p-name" placeholder="e.g. 8-Week Hypertrophy Block" oninput="STATE.program.name=this.value"/></div>
+          <div class="fg"><label class="fl">Duration</label>
+            <select class="fi" id="p-weeks" onchange="STATE.program.weeks=this.value">
+              <option value="4">4 Weeks</option><option value="6">6 Weeks</option>
+              <option value="8" selected>8 Weeks</option><option value="10">10 Weeks</option>
+              <option value="12">12 Weeks</option><option value="16">16 Weeks</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Days Per Week</label>
+            <select class="fi" id="p-days" onchange="STATE.program.daysPerWeek=this.value">
+              <option value="3">3 Days</option><option value="4" selected>4 Days</option>
+              <option value="5">5 Days</option><option value="6">6 Days</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Periodization Model</label>
+            <select class="fi" id="p-period" onchange="STATE.program.periodization=this.value">
+              <option value="linear">Linear Progression</option>
+              <option value="wave">Wave Loading</option>
+              <option value="dup">Daily Undulating (DUP)</option>
+              <option value="block">Block Periodization</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:rgba(245,255,0,.03)">
+        <div class="ct">Periodization Guide</div>
+        <div style="display:grid;gap:10px">
+          <div style="border-left:3px solid var(--y);padding:8px 12px;background:rgba(245,255,0,.04)"><div style="font-size:12px;font-weight:700;color:var(--y);margin-bottom:3px">LINEAR</div><div style="font-size:12px;color:var(--muted)">Add weight/reps every session. Best for beginners &amp; intermediates.</div></div>
+          <div style="border-left:3px solid var(--blue);padding:8px 12px;background:rgba(0,207,255,.04)"><div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px">WAVE LOADING</div><div style="font-size:12px;color:var(--muted)">Sets/intensity wave across weeks. Good for intermediate athletes.</div></div>
+          <div style="border-left:3px solid var(--green);padding:8px 12px;background:rgba(74,222,128,.04)"><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:3px">DAILY UNDULATING (DUP)</div><div style="font-size:12px;color:var(--muted)">Vary rep ranges each session. Advanced &amp; research-backed.</div></div>
+          <div style="border-left:3px solid var(--orange);padding:8px 12px;background:rgba(255,140,66,.04)"><div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:3px">BLOCK PERIODIZATION</div><div style="font-size:12px;color:var(--muted)">Sequential training blocks. Best for advanced athletes.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMART SPLIT -->
+    <div class="page" id="page-split">
+      <div class="sec-title">Smart Split</div>
+      <div class="sec-sub">Choose a template and auto-fill your program</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="ct">Select Split Template</div>
+        <div class="fg" style="margin-bottom:14px">
+          <label class="fl">Split</label>
+          <select class="fi" id="split-select" onchange="highlightSplit(this.value)">
+            <option value="ul4">Upper / Lower (4 days) &#x2014; Best for Hypertrophy</option>
+            <option value="ppl3">Push / Pull / Legs (3 days)</option>
+            <option value="ppl6">Push / Pull / Legs (6 days) &#x2014; Advanced</option>
+            <option value="fb3">Full Body (3 days) &#x2014; Best for Beginners</option>
+          </select>
+        </div>
+        <button class="btn btn-y" style="width:100%;justify-content:center;padding:14px" onclick="applySplit()">&#x26A1; Apply Split &amp; Auto-Fill Program</button>
+      </div>
+        <div id="split-intro" class="split-intro"></div>
+      <div class="split-grid">
+        <div class="split-card selected" onclick="selectSplit('ul4')"><div class="sc-name">Upper / Lower Split</div><div class="sc-days">4 days/week &bull; Intermediate</div><div class="sc-tags"><span class="sc-tag" style="background:rgba(245,255,0,.15);color:var(--y)">Hypertrophy</span><span class="sc-tag" style="background:rgba(74,222,128,.15);color:var(--green)">Strength</span></div></div>
+        <div class="split-card" onclick="selectSplit('ppl3')"><div class="sc-name">Push / Pull / Legs</div><div class="sc-days">3 days/week &bull; All levels</div><div class="sc-tags"><span class="sc-tag" style="background:rgba(245,255,0,.15);color:var(--y)">Hypertrophy</span></div></div>
+        <div class="split-card" onclick="selectSplit('ppl6')"><div class="sc-name">Push / Pull / Legs &#xD7;2</div><div class="sc-days">6 days/week &bull; Advanced</div><div class="sc-tags"><span class="sc-tag" style="background:rgba(245,255,0,.15);color:var(--y)">Hypertrophy</span><span class="sc-tag" style="background:rgba(74,222,128,.15);color:var(--green)">Strength</span></div></div>
+        <div class="split-card" onclick="selectSplit('fb3')"><div class="sc-name">Full Body Training</div><div class="sc-days">3 days/week &bull; Beginner &#x2013; Intermediate</div><div class="sc-tags"><span class="sc-tag" style="background:rgba(74,222,128,.15);color:var(--green)">Strength</span><span class="sc-tag" style="background:rgba(0,207,255,.15);color:var(--blue)">Fat Loss</span></div></div>
+      </div>
+    </div>
+
+    <!-- BUILDER -->
+    <div class="page" id="page-builder">
+      <div class="sec-title">Program Builder</div>
+      <div class="sec-sub">Build and edit your training days</div>
+      <div class="divider"></div>
+      <div style="background:var(--c1);border:1px solid var(--b2);overflow:hidden;">
+        <div class="day-tabs-wrap"><div class="day-tabs" id="day-tabs"></div></div>
+        <div class="ex-header">
+          <span class="ec0">#</span><span class="ec1">Exercise</span><span class="ec2">Muscle</span>
+          <span class="ec3">Sets</span><span class="ec4">Reps</span><span class="ec5">Rest</span>
+          <span class="ec6">RPE</span><span class="ec7">Notes / Coaching Cues</span><span class="ec8">&#xa0;</span>
+        </div>
+        <div id="day-content"></div>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="page" id="page-tools">
+      <div class="sec-title">Smart Tools</div>
+      <div class="sec-sub">1RM calculator &amp; training reference</div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="ct">1RM Calculator (Epley)</div>
+        <div class="grid2" style="display:grid;gap:12px">
+          <div class="fg"><label class="fl">Weight (kg)</label><input class="fi" id="rm-weight" type="number" step="0.5" placeholder="100" oninput="calc1RM()"/></div>
+          <div class="fg"><label class="fl">Reps</label><input class="fi" id="rm-reps" type="number" placeholder="5" oninput="calc1RM()"/></div>
+        </div>
+        <div style="text-align:center;margin-top:4px">
+          <div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Estimated 1RM</div>
+          <div class="rm-result-big" id="rm-result">&#x2014;</div>
+        </div>
+        <div class="rm-pills" id="rm-percentages"></div>
+      </div>
+      <div class="card">
+        <div class="ct">RPE Scale</div>
+        <div style="display:grid;gap:5px;font-size:12px">
+          <div style="display:grid;grid-template-columns:50px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--b2)"><span style="color:var(--y);font-weight:800">RPE 10</span><span style="color:var(--muted)">Max — cannot do another rep</span></div>
+          <div style="display:grid;grid-template-columns:50px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--b2)"><span style="color:var(--orange);font-weight:800">RPE 9</span><span style="color:var(--muted)">Could do 1 more rep</span></div>
+          <div style="display:grid;grid-template-columns:50px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--b2)"><span style="color:var(--orange);font-weight:800">RPE 8</span><span style="color:var(--muted)">Could do 2 more reps — ideal for hypertrophy</span></div>
+          <div style="display:grid;grid-template-columns:50px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--b2)"><span style="color:var(--green);font-weight:800">RPE 7</span><span style="color:var(--muted)">Could do 3 more reps — strength focus</span></div>
+          <div style="display:grid;grid-template-columns:50px 1fr;gap:8px;padding:5px 0"><span style="color:var(--blue);font-weight:800">RPE 6</span><span style="color:var(--muted)">Could do 4+ more — warm-up zone</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div class="sec-title">Volume Analytics</div>
+      <div class="sec-sub">Weekly muscle group volume tracker</div>
+      <div class="divider"></div>
+      <!-- Coach Volume Control Panel -->
+      <div style="background:rgba(245,255,0,.04);border:1px solid rgba(245,255,0,.14);padding:16px;margin-bottom:18px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--y);letter-spacing:2px;margin-bottom:4px">&#x1F3AF; Coach Volume Control</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:1px">Set the target volume range per muscle group manually based on the program goal. The estimator below is a reference only.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px" id="vol-coach-goal">
+          <div style="font-size:11px;color:#555;width:100%;margin-bottom:2px;letter-spacing:2px;text-transform:uppercase">Program Goal Preset</div>
+          <button class="btn btn-sm" onclick="applyVolPreset('hypertrophy')" style="background:rgba(245,255,0,.1);color:var(--y);border:1px solid rgba(245,255,0,.2)">&#x1F4AA; Hypertrophy</button>
+          <button class="btn btn-sm" onclick="applyVolPreset('strength')" style="background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2)">&#x1F3CB; Strength</button>
+          <button class="btn btn-sm" onclick="applyVolPreset('endurance')" style="background:rgba(0,207,255,.08);color:#00cfff;border:1px solid rgba(0,207,255,.2)">&#x26A1; Endurance</button>
+          <button class="btn btn-sm" onclick="applyVolPreset('fatloss')" style="background:rgba(255,140,66,.08);color:#ff8c42;border:1px solid rgba(255,140,66,.2)">&#x1F525; Fat Loss</button>
+          <button class="btn btn-sm" onclick="applyVolPreset('beginner')" style="background:rgba(168,230,207,.08);color:#a8e6cf;border:1px solid rgba(168,230,207,.2)">&#x1F331; Beginner</button>
+        </div>
+        <div id="vol-coach-overrides"></div>
+        <div style="font-size:10px;color:#333;margin-top:8px;font-style:italic">Changes here override the auto-estimator for this session.</div>
+      </div>
+      <!-- Auto-Estimator Preview -->
+      <div style="font-size:10px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px">&#x1F4CA; Auto-Estimator Preview (Read-Only Reference)</div>
+      <div class="vol-grid" id="vol-grid"></div>
+      <div style="margin-top:20px;margin-bottom:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)">Training Days Overview</div>
+      <div style="display:grid;gap:8px" id="day-summary"></div>
+    </div>
+
+  </main>
+</div>
+
+<nav class="bnav">
+  <div class="bi active" onclick="showPage('client')" data-page="client"><span class="ic">&#x1F464;</span><span class="lb">Athlete</span></div>
+  <div class="bi" onclick="showPage('program')" data-page="program"><span class="ic">&#x1F4CB;</span><span class="lb">Program</span></div>
+  <div class="bi" onclick="showPage('split')" data-page="split"><span class="ic">&#x26A1;</span><span class="lb">Split</span></div>
+  <div class="bi" onclick="showPage('builder')" data-page="builder"><span class="ic">&#x1F3CB;</span><span class="lb">Builder</span></div>
+  <div class="bi" onclick="showPage('tools')" data-page="tools"><span class="ic">&#x1F9EE;</span><span class="lb">Tools</span></div>
+  <div class="bi" onclick="showPage('analytics')" data-page="analytics"><span class="ic">&#x1F4CA;</span><span class="lb">Volume</span></div>
+  <div class="bi" onclick="exportDocx()"><span class="ic">&#x1F4E5;</span><span class="lb">Export</span></div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- Logo base64 -->
+<script src="js/logo.js"></script>
+<!-- docx IIFE bundle -->
+<script src="../vendor/docx.iife.js"></script>
+<!-- App logic (state, nav, builder, tools, analytics) -->
+<script src="js/app.js"></script>
+<!-- DOCX export -->
+<script src="js/docx-export.js"></script>
+<!-- Extra UI helpers -->
+<script src="js/ui-helpers.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V2 UPGRADE LAYER — save/restore, backup, new splits, new tools
+     ═══════════════════════════════════════════════════════════════ -->
+<script src="js/v2-upgrade.js"></script>
+
+<!-- V2.6: embedded exercise dataset (1,324 exercises, GIF + thumb + equipment) -->
+<script src="js/exercise-data.js"></script>
+<!-- ═══════════════════════════════════════════════════════════════
+     V2.5 GIF LAYER — animated exercise demos, DB thumbnails,
+     clickable exercise names inside the exported .docx
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="js/gif-layer.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V2.6 DATASET LAYER — 1,324 exercises wired to the builder:
+     muscle-group mapping, equipment tags, gif thumbs/search,
+     step-by-step instructions, recommended rest times
+     ═══════════════════════════════════════════════════════════════ -->
+<script src="js/dataset-layer.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V2.7 — standalone Exercise-Database nav page + PDF export
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="js/db-page.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V2.9 — Export themes (original kept) + theme picker
+     ═══════════════════════════════════════════════════════════════ -->
+<script src="js/export-themes.js"></script>
+<script src="../vendor/exceljs.min.js" fetchpriority="low"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V3.0 — EXCEL (.xlsx) PROGRESS EXPORT with live auto-carry:
+     one tab per week; each week's FROM LAST WEEK cells are formulas
+     that automatically pull the client's WEIGHT & REPS from the
+     previous week's tab — the weeks chain themselves.
+     ═══════════════════════════════════════════════════════════════ -->
+<script src="js/xlsx-export.js"></script>
+
+
+
+
+
+<script src="js/clients.js"></script>
+</body>
+</html>
